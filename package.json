@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Belajar NodeJS RESTful API",
   "main": "src/main.js",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "test": "jest -i",
     "start": "node app.js",
