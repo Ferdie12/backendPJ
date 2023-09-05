@@ -4,7 +4,7 @@ export default class User {
   static register = async (req, res, next) => {
     try {
       const result = await userService.register(req.body);
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "register succes",
         data: result,
@@ -17,7 +17,7 @@ export default class User {
   static login = async (req, res, next) => {
     try {
       const result = await userService.login(req.body);
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "login succes",
         data: result,
@@ -30,7 +30,7 @@ export default class User {
   static getAll = async (req, res, next) => {
     try {
       const result = await userService.getAll();
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "get all succes",
         data: result,
@@ -44,7 +44,7 @@ export default class User {
     try {
       const result = await userService.setPJ(req);
 
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "update pj succes",
         data: result,

@@ -7,4 +7,11 @@ const router = express.Router();
 router.use("/user", User);
 router.use("/order", Order);
 
+router.get("/", (req, res) => {
+  return res.status(200).json({
+    status: true,
+    message: "deploy succes",
+  });
+});
+
 export default router;
