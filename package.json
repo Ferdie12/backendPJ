@@ -1,17 +1,17 @@
 {
-  "name": "belajar-nodejs-restful-api",
+  "name": "backend-pj",
   "version": "1.0.0",
-  "description": "Belajar NodeJS RESTful API",
+  "description": "backend-pj",
   "main": "src/main.js",
   "engines": {
-    "node": "14.x"
+    "node": "18.x"
   },
   "scripts": {
     "test": "jest -i",
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
-  "author": "Eko Kurniawan Khannedy",
+  "author": "ferdie dan iwal",
   "license": "ISC",
   "type": "module",
   "dependencies": {
