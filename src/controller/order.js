@@ -16,7 +16,7 @@ const create = async (req, res, next) => {
 
 const getAll = async (req, res, next) => {
   try {
-    const result = await orderService.getAll();
+    const result = await orderService.getAll(req);
 
     return res.status(200).json({
       status: true,
@@ -44,7 +44,7 @@ const delete_one = async (req, res, next) => {
 
 const delete_all = async (req, res, next) => {
   try {
-    const result = await orderService.delete_all();
+    const result = await orderService.delete_all(req);
 
     return res.status(200).json({
       status: true,

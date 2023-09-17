@@ -1,33 +1,28 @@
 import prisma from "../application/database.js";
 import ResponseError from "../error/response-error.js";
+import orderValidate from "../validation/order-validation.js";
+import { validate } from "../validation/validation.js";
 
 const create = async (req) => {
-  if (!req.body) {
-    throw new ResponseError(400, "body tidak boleh kosong");
-  }
-
-  const { name, order, price, pay, status, category } = req.body;
-
-  if (!name || !order || !price || !pay || !status || !category) {
-    throw new ResponseError(400, "body tidak boleh kosong");
-  }
+  const result = validate(orderValidate, req.body);
 
   return prisma.makanan.create({
     data: {
-      name,
-      order,
-      status,
-      category,
-      price: +price,
-      pay: +pay,
-      payback: +price - +pay,
+      name: result.name,
+      order: result.order,
+      status: result.status,
+      category: result.category,
+      price: result.price,
+      pay: result.pay,
+      payback: result.pay - result.price,
       user_id: req.user.id,
     },
   });
 };
 
-const getAll = async () => {
-  const data = await prisma.makanan.findMany();
+const getAll = async (req) => {
+  const { category } = req.params;
+  const data = await prisma.makanan.findMany({ where: { category } });
   if (!data) {
     throw new ResponseError(500, "data tidak ada");
   }
@@ -43,30 +38,57 @@ const getAll = async () => {
 
 const delete_one = async (req) => {
   const { id } = req.params;
+  const check = await prisma.makanan.findFirst({
+    where: {
+      id: +id,
+    },
+  });
+
+  if (!check) {
+    throw new ResponseError(404, "Makanan not found");
+  }
   return prisma.makanan.delete({
     where: {
-      AND: [{ id: +id }, { user_id: req.user.id }],
+      id: +id,
     },
   });
 };
 
-const delete_all = async () => {
-  return prisma.makanan.deleteMany();
+const delete_all = async (req) => {
+  const data = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { role: true },
+  });
+  const category = data.role.split(" ")[1];
+  return prisma.makanan.deleteMany({ where: { category } });
 };
 
 const setBayar = async (req) => {
-  if (req.user.role !== "PJ") {
-    throw new ResponseError(400, "you're not authorized!");
+  const { id, status } = req.body;
+  const makanan = await prisma.makanan.findFirst({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!makanan) {
+    throw new ResponseError(404, "Makanan not found");
   }
-  const { id } = req.params;
+
   return prisma.makanan.update({
     where: {
-      AND: [{ id: +id }, { user_id: req.user.id }],
+      id: makanan.id,
     },
     data: {
-      status: "bayar",
+      status,
     },
   });
 };
 
-export default { create, getAll, delete_one, delete_all, setBayar };
+export default {
+  create,
+  getAll,
+  delete_one,
+  delete_all,
+  setBayar,
+};

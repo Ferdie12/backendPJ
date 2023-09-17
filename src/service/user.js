@@ -26,11 +26,9 @@ const register = async (request) => {
 
   delete user.confirmpassword;
 
-  if (user.email === SUPER_ADMIN) {
-    user.role = "SUPER ADMIN";
-  } else {
-    user.role = "USER";
-  }
+  user.role = "USER";
+  user.count_siang = 0;
+  user.count_sarapan = 0;
 
   return prisma.user.create({
     data: user,
@@ -44,7 +42,7 @@ const register = async (request) => {
 const login = async (request) => {
   const loginRequest = validate(loginUserValidation, request);
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       email: loginRequest.email,
     },
@@ -67,6 +65,7 @@ const login = async (request) => {
     name: user.name,
     email: user.email,
     role: user.role,
+    posisi: user.posisi,
   };
 
   const token = await jwt.sign(payload, JWT_SECRET_KEY);
@@ -77,27 +76,178 @@ const login = async (request) => {
 const getAll = async () => {
   const data = await prisma.user.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, name: true, posisi: true },
+    select: {
+      id: true,
+      name: true,
+      posisi: true,
+      email: true,
+      posisi: true,
+      role: true,
+      exp: true,
+    },
   });
 
   return data;
 };
 
-const setPJ = async (request) => {
+const getAllPJ = async () => {
+  const data = await prisma.user.findMany({
+    where: { role: { startsWith: "PJ" } },
+    select: {
+      id: true,
+      name: true,
+      posisi: true,
+      role: true,
+    },
+  });
+
+  const pjSiang = [];
+  const pjSarapan = [];
+
+  data.forEach((item) => {
+    if (item.role === "PJ siang") {
+      pjSiang.push(item);
+    } else if (item.role === "PJ sarapan") {
+      pjSarapan.push(item);
+    }
+  });
+
+  return {
+    siang: pjSiang,
+    sarapan: pjSarapan,
+  };
+};
+
+const getAllSetPJ = async (req) => {
+  const check = await prisma.user.findFirst({
+    where: { id: req.user.id },
+    select: { exp: true, role: true, count_sarapan: true, count_siang: true },
+  });
+
+  const category = check.role.split(" ")[1];
+
+  const data = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      posisi: true,
+      role: true,
+      count_sarapan: true,
+      count_siang: true,
+    },
+  });
+
+  const tes_sarapan = await prisma.user.findFirst({
+    where: {
+      count_sarapan: { lt: check.count_sarapan },
+    },
+  });
+
+  const tes_siang = await prisma.user.findFirst({
+    where: {
+      count_siang: { lt: check.count_siang },
+    },
+  });
+
+  let value = [];
+
+  data.forEach((item) => {
+    if (
+      category == "siang" &&
+      check.count_siang > item.count_siang &&
+      tes_siang
+    ) {
+      value.push(item);
+    } else if (
+      category == "siang" &&
+      check.count_siang == item.count_siang &&
+      !tes_siang
+    ) {
+      value.push(item);
+    } else if (
+      category == "sarapan" &&
+      check.count_sarapan > item.count_sarapan &&
+      tes_sarapan
+    ) {
+      value.push(item);
+    } else if (
+      category == "sarapan" &&
+      check.count_sarapan == item.count_sarapan &&
+      !tes_sarapan
+    ) {
+      value.push(item);
+    }
+  });
+
+  return value;
+};
+
+const setPJ = async (req) => {
   const { id } = req.params;
-  if (req.user.role !== "SUPER ADMIN" || req.user.role !== "PJ") {
-    throw new ResponseError(400, "you're not authorized!");
+
+  const check = await prisma.user.findFirst({
+    where: { id: req.user.id },
+    select: { exp: true, role: true },
+  });
+
+  const category = check.role.split(" ")[1];
+
+  const richek = await prisma.user.findFirst({
+    where: {
+      AND: [
+        { id: +id },
+        {
+          role: {
+            startsWith: "PJ",
+          },
+        },
+      ],
+    },
+    select: { name: true },
+  });
+
+  const total = await prisma.user.findUnique({
+    where: { id: +id },
+    select: { count_siang: true, count_sarapan: true },
+  });
+
+  let result;
+  if (category == "siang") {
+    result = {
+      role: `PJ ${category}`,
+      exp: 0,
+      count_siang: total.count_siang + 1,
+    };
+  } else if (category == "sarapan") {
+    result = {
+      role: `PJ ${category}`,
+      exp: 0,
+      count_sarapan: total.count_sarapan + 1,
+    };
   }
 
+  const tanggal = new Date();
+  const angkaHari = tanggal.getDay();
+
+  if (angkaHari > check.exp) {
+    throw new ResponseError(
+      400,
+      "kamu bisa menukar status pj hanya pada hari minggu "
+    );
+  }
+
+  if (richek) {
+    throw new ResponseError(400, "pj sudah terdaftar");
+  }
   const [updatePJ, resetPJ] = await prisma.$transaction(async (prisma) => {
     const updatePJ = await prisma.user.update({
-      where: { id: id },
-      data: { role: "PJ" },
+      where: { id: +id },
+      data: result,
     });
 
     const resetPJ = await prisma.user.update({
       where: { id: req.user.id },
-      data: { role: "USER" },
+      data: { role: "USER", exp: null },
     });
 
     return [updatePJ, resetPJ];
@@ -115,4 +265,6 @@ export default {
   login,
   setPJ,
   getAll,
+  getAllPJ,
+  getAllSetPJ,
 };

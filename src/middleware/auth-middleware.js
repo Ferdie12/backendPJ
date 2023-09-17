@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import ResponseError from "../error/response-error.js";
 import jwt from "jsonwebtoken";
+import prisma from "../application/database.js";
 const { JWT_SECRET_KEY = "secret" } = process.env;
 
 const authMiddleware = async (req, res, next) => {
@@ -11,7 +12,7 @@ const authMiddleware = async (req, res, next) => {
     if (!authorization) {
       throw new ResponseError(400, "you're not authorized!");
     }
-    console.log(JWT_SECRET_KEY);
+
     const data = await jwt.verify(authorization, JWT_SECRET_KEY);
 
     if (!data) {
@@ -23,6 +24,7 @@ const authMiddleware = async (req, res, next) => {
       name: data.name,
       email: data.email,
       role: data.role,
+      posisi: data.posisi,
     };
 
     next();
@@ -32,17 +34,20 @@ const authMiddleware = async (req, res, next) => {
 };
 
 const adminOnly = async (req, res, next) => {
-  if (req.user.role !== "PJ") {
-    throw new ResponseError(400, "you're not authorized!");
+  try {
+    const check = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { role: true },
+    });
+
+    const role = check.role.split(" ")[0];
+    if (role !== "PJ") {
+      throw new ResponseError(400, "Harus PJ Woiiiii!");
+    }
+    next();
+  } catch (e) {
+    next(e);
   }
-  next();
 };
 
-const superAdmin = async (req, res, next) => {
-  if (req.user.role !== "SUPER ADMIN" || req.user.role !== "PJ") {
-    throw new ResponseError(400, "you're not authorized!");
-  }
-  next();
-};
-
-export default { authMiddleware, adminOnly, superAdmin };
+export default { authMiddleware, adminOnly };

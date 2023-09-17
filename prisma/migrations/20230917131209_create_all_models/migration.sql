@@ -1,11 +1,14 @@
 -- CreateTable
 CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
-    "username" VARCHAR(100) NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
     "password" VARCHAR(100) NOT NULL,
     "email" VARCHAR(100) NOT NULL,
+    "posisi" VARCHAR(100) NOT NULL,
     "role" VARCHAR(100) NOT NULL,
-    "token" VARCHAR(100),
+    "count_siang" INTEGER,
+    "count_sarapan" INTEGER,
+    "exp" INTEGER,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -18,6 +21,8 @@ CREATE TABLE "makanan" (
     "price" INTEGER NOT NULL,
     "pay" INTEGER NOT NULL,
     "payback" INTEGER NOT NULL,
+    "status" VARCHAR(100) NOT NULL,
+    "category" VARCHAR(100) NOT NULL,
     "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "makanan_pkey" PRIMARY KEY ("id")

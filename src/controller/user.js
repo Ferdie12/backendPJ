@@ -53,4 +53,30 @@ export default class User {
       next(e);
     }
   };
+
+  static getAllPJ = async (req, res, next) => {
+    try {
+      const result = await userService.getAllPJ();
+      return res.status(200).json({
+        status: true,
+        message: "get all pj succes",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getAllSetPJ = async (req, res, next) => {
+    try {
+      const result = await userService.getAllSetPJ(req);
+      return res.status(200).json({
+        status: true,
+        message: "get all set pj succes",
+        data: result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  };
 }

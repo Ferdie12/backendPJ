@@ -3,22 +3,22 @@ import Order from "../controller/order.js";
 import Middleware from "../middleware/auth-middleware.js";
 const router = express.Router();
 
-router.post("/create", Middleware.authMiddleware, Order.create);
-router.get("/getAll", Middleware.authMiddleware, Order.getAll);
+router.post("/create/:category", Middleware.authMiddleware, Order.create);
+router.get("/getAll/:category", Middleware.authMiddleware, Order.getAll);
 router.delete(
-  "/delete_one/:id",
+  "/delete-one/:id",
   Middleware.authMiddleware,
   Middleware.adminOnly,
   Order.delete_one
 );
 router.delete(
-  "/delete_all",
+  "/delete-all",
   Middleware.authMiddleware,
   Middleware.adminOnly,
   Order.delete_all
 );
-router.get(
-  "/setBayar/:id",
+router.put(
+  "/set-bayar",
   Middleware.authMiddleware,
   Middleware.adminOnly,
   Order.setBayar
