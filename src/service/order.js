@@ -5,6 +5,28 @@ import { validate } from "../validation/validation.js";
 
 const create = async (req) => {
   const result = validate(orderValidate, req.body);
+  const now = new Date();
+  const targetTimeMorningStart = new Date();
+  targetTimeMorningStart.setHours(7, 40, 0, 0); // Set waktu mulai rentang pagi
+
+  const targetTimeMorningEnd = new Date();
+  targetTimeMorningEnd.setHours(10, 0, 0, 0); // Set waktu akhir rentang pagi
+
+  const targetTimeAfternoonStart = new Date();
+  targetTimeAfternoonStart.setHours(11, 0, 0, 0); // Set waktu mulai rentang siang
+
+  const targetTimeAfternoonEnd = new Date();
+  targetTimeAfternoonEnd.setHours(13, 0, 0, 0); // Set waktu akhir rentang siang
+
+  if (
+    (now >= targetTimeMorningStart && now <= targetTimeMorningEnd) ||
+    (now >= targetTimeAfternoonStart && now <= targetTimeAfternoonEnd)
+  ) {
+    throw new ResponseError(
+      400,
+      "Operasi terlarang pada rentang waktu tertentu. Silakan coba lagi di luar rentang waktu 7:40 - 10 atau 11 - 13."
+    );
+  }
 
   return prisma.makanan.create({
     data: {
