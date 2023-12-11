@@ -5,22 +5,22 @@ import { validate } from "../validation/validation.js";
 
 const create = async (req) => {
   const result = validate(orderValidate, req.body);
+  // Dapatkan waktu UTC saat ini
   const now = new Date();
-  const targetTimeMorningStart = new Date();
-  targetTimeMorningStart.setHours(7, 40, 0, 0); // Set waktu mulai rentang pagi
+  const nowUTC = new Date(now.toISOString());
 
-  const targetTimeMorningEnd = new Date();
-  targetTimeMorningEnd.setHours(10, 0, 0, 0); // Set waktu akhir rentang pagi
+  // Tetapkan waktu UTC untuk rentang pagi dan siang
+  const targetTimeMorningStartUTC = new Date("1970-01-01T07:40:00Z");
+  const targetTimeMorningEndUTC = new Date("1970-01-01T10:00:00Z");
+  const targetTimeAfternoonStartUTC = new Date("1970-01-01T11:00:00Z");
+  const targetTimeAfternoonEndUTC = new Date("1970-01-01T13:00:00Z");
 
-  const targetTimeAfternoonStart = new Date();
-  targetTimeAfternoonStart.setHours(11, 0, 0, 0); // Set waktu mulai rentang siang
-
-  const targetTimeAfternoonEnd = new Date();
-  targetTimeAfternoonEnd.setHours(13, 0, 0, 0); // Set waktu akhir rentang siang
-
+  // Lakukan pengecekan rentang waktu menggunakan waktu UTC
   if (
-    (now >= targetTimeMorningStart && now <= targetTimeMorningEnd) ||
-    (now >= targetTimeAfternoonStart && now <= targetTimeAfternoonEnd)
+    (nowUTC >= targetTimeMorningStartUTC &&
+      nowUTC <= targetTimeMorningEndUTC) ||
+    (nowUTC >= targetTimeAfternoonStartUTC &&
+      nowUTC <= targetTimeAfternoonEndUTC)
   ) {
     throw new ResponseError(
       400,
