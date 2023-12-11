@@ -7,20 +7,23 @@ const create = async (req) => {
   const result = validate(orderValidate, req.body);
   // Dapatkan waktu UTC saat ini
   const now = new Date();
-  const nowUTC = new Date(now.toISOString());
+  const jakartaTimezone = "Asia/Jakarta";
+  const nowJakarta = new Date(
+    now.toLocaleString("en-US", { timeZone: jakartaTimezone })
+  );
 
   // Tetapkan waktu UTC untuk rentang pagi dan siang
-  const targetTimeMorningStartUTC = new Date("1970-01-01T07:40:00Z");
-  const targetTimeMorningEndUTC = new Date("1970-01-01T10:00:00Z");
-  const targetTimeAfternoonStartUTC = new Date("1970-01-01T11:00:00Z");
-  const targetTimeAfternoonEndUTC = new Date("1970-01-01T13:00:00Z");
+  const targetTimeMorningStartUTC = new Date("1970-01-01T00:40:00Z");
+  const targetTimeMorningEndUTC = new Date("1970-01-01T03:00:00Z");
+  const targetTimeAfternoonStartUTC = new Date("1970-01-01T04:00:00Z");
+  const targetTimeAfternoonEndUTC = new Date("1970-01-01T06:00:00Z");
 
-  // Lakukan pengecekan rentang waktu menggunakan waktu UTC
+  // Lakukan pengecekan rentang waktu menggunakan waktu Jakarta
   if (
-    (nowUTC >= targetTimeMorningStartUTC &&
-      nowUTC <= targetTimeMorningEndUTC) ||
-    (nowUTC >= targetTimeAfternoonStartUTC &&
-      nowUTC <= targetTimeAfternoonEndUTC)
+    (nowJakarta >= targetTimeMorningStartUTC &&
+      nowJakarta <= targetTimeMorningEndUTC) ||
+    (nowJakarta >= targetTimeAfternoonStartUTC &&
+      nowJakarta <= targetTimeAfternoonEndUTC)
   ) {
     throw new ResponseError(
       400,
